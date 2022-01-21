@@ -2,26 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Comment;
-use Illuminate\Http\Request;
+use App\Http\Requests\CommentRequest;
+use App\Repositories\CommentRepository;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Response;
 
 class CommentController extends Controller
 {
-    public function index()
-    {
-        $products = Comment::all()->toArray();
+    protected $commentRepository;
 
-        return array_reverse($products);
+    /**
+     * @param CommentRepository $commentRepository
+     */
+    public function __construct(CommentRepository $commentRepository)
+    {
+        $this->commentRepository = $commentRepository;
     }
 
-    public function store(Request $request)
+    /**
+     * @param $postId
+     * @return JsonResponse
+     */
+    public function index($postId): JsonResponse
     {
-        $product = new Comment([
-            'name' => $request->input('name'),
-            'detail' => $request->input('detail')
-        ]);
-        $product->save();
+        $comments = $this->commentRepository->index($postId);
 
-        return response()->json('Product created!');
+        return response()->json($comments);
+    }
+
+    /**
+     * @param CommentRequest $request
+     * @param $postId
+     * @return JsonResponse
+     */
+    public function store(CommentRequest $request, $postId): JsonResponse
+    {
+        $data = $request->get('data');
+        $data['post_id'] = $postId;
+
+        if ($this->commentRepository->store($data)) {
+            return response()->json('Comment created!');
+        } else {
+            return response()->json('Sth went wrong', Response::HTTP_BAD_REQUEST);
+        }
     }
 }

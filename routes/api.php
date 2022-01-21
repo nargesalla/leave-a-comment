@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,5 +14,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('api')->group(function () {
-    Route::resource('comments', CommentController::class);
+    Route::get('post/{postId}/comments', 'CommentController@index')->where('id', '\d+');
+    Route::post('post/{postId}/leave-comment', 'CommentController@store')->where('id', '\d+');
 });
